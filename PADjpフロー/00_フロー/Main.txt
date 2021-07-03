@@ -1,0 +1,15 @@
+Excel.GetFirstFreeColumnRow Instance: ExcelInstance FirstFreeColumn=> FirstFreeColumn FirstFreeRow=> FirstFreeRow
+Excel.Advanced.GetFirstFreeRowOnColumn Instance: ExcelInstance Column: 3 FirstFreeRowOnColumn=> FirstFreeRowOnColumn
+WebAutomation.LaunchEdge Url: $'''https://www.msn.com/ja-jp/money/currencyconverter''' WindowState: WebAutomation.BrowserWindowState.Normal ClearCache: False ClearCookies: False Timeout: 60 BrowserInstance=> Browser
+WebAutomation.DataExtraction.ExtractTable BrowserInstance: Browser Control: $'''html > body > div:eq(3) > div > main > div > div:eq(1) > div:eq(0) > div:eq(0) > div > div:eq(1) > div''' ExtractionParameters: {[$'''div:eq(0) > span:eq(0) > p''', $'''Own Text''', $'''''', $'''Value #1'''], [$'''span:eq(1) > p''', $'''Own Text''', $'''''', $'''Value #2'''] } ExtractedData=> DataFromWebPage
+LOOP LoopIndex FROM 2 TO FirstFreeRowOnColumn - 1 STEP 1
+    Excel.ReadCell Instance: ExcelInstance StartColumn: 3 StartRow: LoopIndex ReadAsText: False CellValue=> Tani
+    LOOP FOREACH CurrentItem IN DataFromWebPage
+        IF Tani = CurrentItem[0] THEN
+            Excel.WriteCell Instance: ExcelInstance Value: CurrentItem[1] Column: 4 Row: LoopIndex
+        END
+    END
+    System.RunApplication ApplicationPath: $'''%SpecialFolderPath%\\WpfApp1.exe''' WindowStyle: System.ProcessWindowStyle.Normal ProcessId=> AppProcessId
+    CALL Subflow_1
+    System.TerminateProcessById ProcessId: AppProcessId
+END
